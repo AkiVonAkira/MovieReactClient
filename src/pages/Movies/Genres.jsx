@@ -1,67 +1,37 @@
-export default function Genres() {
+import React from "react";
+import styled from "styled-components";
+
+const GenresContainer = styled.div`
+  margin: 2rem 1rem;
+`;
+
+const Genre = styled.div`
+  strong {
+    font-weight: bold;
+  }
+
+  p {
+    margin-top: 1rem;
+  }
+`;
+
+const Genres = () => {
   return (
-    <div className="genres">
-      <h3>Genres</h3>
+    <GenresContainer>
+      <Genre>
+        <p>
+          <strong>Genre Title</strong> - Genre Description.
+        </p>
+      </Genre>
 
-      <div className="genre">
+      <Genre>
         <p>
-          <strong>Genre Title</strong>
+          <strong>Genre Title</strong> - Genre Description. Lorem ipsum dolor
+          sit amet consectetur adipisicing elit.
         </p>
-        <p>
-          Genre Description. Lorem ipsum dolor sit amet consectetur adipisicing
-          elit. Rerum, recusandae doloribus qui molestias similique asperiores
-          incidunt. Obcaecati tenetur consectetur dolorem eius ex, ad,
-          laudantium inventore quia odio minus eligendi ipsa?
-        </p>
-      </div>
-
-      <div className="genre">
-        <p>
-          <strong>Lorem ipsum dolor sit amet.</strong>
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rerum,
-          recusandae doloribus qui molestias similique asperiores incidunt.
-          Obcaecati tenetur consectetur dolorem eius ex, ad, laudantium
-          inventore quia odio minus eligendi ipsa?
-        </p>
-      </div>
-
-      <div className="genre">
-        <p>
-          <strong>Lorem ipsum dolor sit amet.</strong>
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rerum,
-          recusandae doloribus qui molestias similique asperiores incidunt.
-          Obcaecati tenetur consectetur dolorem eius ex, ad, laudantium
-          inventore quia odio minus eligendi ipsa?
-        </p>
-      </div>
-
-      <div className="genre">
-        <p>
-          <strong>Lorem ipsum dolor sit amet.</strong>
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rerum,
-          recusandae doloribus qui molestias similique asperiores incidunt.
-          Obcaecati tenetur consectetur dolorem eius ex, ad, laudantium
-          inventore quia odio minus eligendi ipsa?
-        </p>
-      </div>
-
-      <div className="genre">
-        <p>
-          <strong>Lorem ipsum dolor sit amet.</strong>
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rerum,
-          recusandae doloribus qui molestias similique asperiores incidunt.
-          Obcaecati tenetur consectetur dolorem eius ex, ad, laudantium
-          inventore quia odio minus eligendi ipsa?
-        </p>
-      </div>
-    </div>
+      </Genre>
+    </GenresContainer>
   );
-}
+};
+
+export default Genres;

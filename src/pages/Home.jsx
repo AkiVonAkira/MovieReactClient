@@ -1,3 +1,9 @@
+import { styled } from "styled-components";
+
+const title = styled.h2`
+  color: var(--primary);
+`;
+
 export default function Home() {
   return (
     <div className="home">
