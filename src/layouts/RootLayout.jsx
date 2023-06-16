@@ -18,13 +18,18 @@ const Header = styled.header`
 
 const Nav = styled.nav`
   display: flex;
-  gap: 16px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1em;
   align-items: center;
 `;
 
 const NavLinkStyled = styled(NavLink)`
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
   text-decoration: none;
-  padding: 6px;
+  padding: 1em;
   border-radius: 4px;
   color: white;
   transition: background 0.3s;

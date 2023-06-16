@@ -14,7 +14,7 @@ const PopupContainer = styled.div`
 `;
 
 const PopupContent = styled.div`
-  background: #0086a5;
+  background: var(--primary);
   color: #ffffff;
   padding: 2rem;
   border-radius: 0.45rem;

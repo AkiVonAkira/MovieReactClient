@@ -34,11 +34,13 @@ const GlobalStyles = createGlobalStyle`
   }
 
   p {
-    margin: 20px 0;
+    margin: 0;
   }
 
   button {
     display: flex;
+    justify-content: center; 
+    align-items: center;
     background-color: var(--primary);
     font-size: 1em;
     color: #fff;
