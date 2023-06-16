@@ -6,13 +6,23 @@ const GlobalStyles = createGlobalStyle`
     line-height: 1.5;
     font-weight: 400;
 
+    color-scheme: light dark;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+
     --primary: #bc4123;
     --secondary: #2b3452;
   }
 
   body {
+    min-width: 320px;
+    min-height: 100vh;
+    padding: 0;
     margin: 0;
-    padding: 20px;
     font-family: "Poppins";
     background: var(--secondary);
   }
@@ -20,6 +30,7 @@ const GlobalStyles = createGlobalStyle`
   * {
     color: #fff;
     margin: 0;
+    padding: 0;
   }
 
   p {
@@ -27,12 +38,19 @@ const GlobalStyles = createGlobalStyle`
   }
 
   button {
-    border: 0;
-    padding: 8px;
-    border-radius: 4px;
+    display: flex;
+    background-color: var(--primary);
+    font-size: 1em;
     color: #fff;
-    background: var(--primary);
+    border: none;
+    padding: 1em 2em;
+    margin-left: 0.5em;
+    border-radius: 0.5rem;
     cursor: pointer;
+    &:hover {
+      background-color: #c20d0d;
+      box-shadow: 0 10px 20px -15px black;
+    }
   }
 `;
 
