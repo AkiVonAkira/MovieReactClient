@@ -30,6 +30,7 @@ const FormWrapper = styled.div`
   flex-direction: column;
   padding: 1rem;
   border-radius: 0.5rem;
+  gap: 1em;
 `;
 
 const UserDetails = styled.div`
@@ -58,7 +59,6 @@ const ListItem = styled.li`
 const Form = styled.form`
   display: flex;
   align-items: center;
-  margin-top: 10px;
   gap: 1em;
 `;
 
@@ -69,18 +69,19 @@ const StyledInputWrapper = styled.input`
   border-radius: 0.5rem;
   border: 1px solid #ccc;
   background-color: transparent;
-  padding: .5em ;
+  padding: 0.5em;
   font-size: 1rem;
   outline: none;
   transition: box-shadow 0.2s ease-in-out;
-  margin: auto
+  margin: auto;
+  gap: 1em;
 
   &::placeholder {
     color: #b1b1b1;
   }
 
   &:focus-visible {
-  box-shadow: 0 10px 20px -15px black;
+    box-shadow: 0 10px 20px -15px black;
   }
 
   &:disabled {
@@ -89,27 +90,14 @@ const StyledInputWrapper = styled.input`
   }
 `;
 
-const StyledButton = styled.button`
-  display: flex;
-  background-color: var(--primary);
-  font-size: 1em;
-  color: #fff;
-  border: none;
-  padding: 1em 2em;
-  margin-left: 0.5em;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  &:hover {
-    background-color: #c20d0d;
-    box-shadow: 0 10px 20px -15px black;
-  }
-`;
+let inputCounter = 0;
 
 export default function User() {
   const [userData, setUserData] = useState([]);
   const [genreData, setGenreData] = useState([]);
   const [personGenreData, setPersonGenreData] = useState([]);
   const [newGenre, setNewGenre] = useState("");
+  const [genreInputs, setGenreInputs] = useState([]);
   // const [movies, setMovies] = useState([]);
   // const [newMovie, setNewMovie] = useState("");
   // const [newRating, setNewRating] = useState("");
@@ -158,6 +146,22 @@ export default function User() {
     }
   };
 
+  const addGenreInput = (personId) => {
+    const newInput = { id: `input_${inputCounter}`, personId, genre: "" };
+    inputCounter++;
+    setGenreInputs([...genreInputs, newInput]);
+  };
+
+  const updateGenreInput = (inputId, value) => {
+    const updatedInputs = genreInputs.map((input) => {
+      if (input.id === inputId) {
+        return { ...input, genre: value };
+      }
+      return input;
+    });
+    setGenreInputs(updatedInputs);
+  };
+
   const addMovie = () => {
     //
   };
@@ -179,21 +183,33 @@ export default function User() {
                   <ListItem key={genre}>{genre}</ListItem>
                 ))}
               </List>
-              <Form>
-                <StyledInputWrapper
-                  type="text"
-                  value={newGenre}
-                  placeholder="Genre"
-                  onChange={(e) => setNewGenre(e.target.value)}
-                />
-                <StyledButton
-                  onClick={() =>
-                    addGenreToPerson(person.personId, genreData.genreId)
-                  }
-                >
-                  Add Genre
-                </StyledButton>
-              </Form>
+              {genreInputs.map((input, genreIndex) => {
+                if (input.personId === person.personId) {
+                  return (
+                    <Form key={input.id}>
+                      <StyledInputWrapper
+                        type="text"
+                        value={input.genre}
+                        placeholder="Genre"
+                        onChange={(e) =>
+                          updateGenreInput(input.id, e.target.value)
+                        }
+                      />
+                      <button
+                        onClick={() =>
+                          addGenreToPerson(person.personId, input.genre)
+                        }
+                      >
+                        Add Genre
+                      </button>
+                    </Form>
+                  );
+                }
+                return null;
+              })}
+              <button onClick={() => addGenreInput(person.personId)}>
+                Add Genre Input
+              </button>
             </FormWrapper>
             <FormWrapper>
               <SectionHeading>Movies</SectionHeading>
@@ -217,7 +233,7 @@ export default function User() {
                   placeholder="Movie Rating"
                   onChange={(e) => setNewRating(e.target.value)}
                 />
-                <StyledButton onClick={addMovie}>Add Movie</StyledButton>
+                <button onClick={addMovie}>Add Movie</button>
               </Form> */}
             </FormWrapper>
           </UserWrapper>

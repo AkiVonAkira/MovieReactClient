@@ -6,7 +6,7 @@ const GlobalStyles = createGlobalStyle`
     line-height: 1.5;
     font-weight: 400;
 
-    color-scheme: light dark;
+    color-scheme: dark;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -44,7 +44,6 @@ const GlobalStyles = createGlobalStyle`
     color: #fff;
     border: none;
     padding: 1em 2em;
-    margin-left: 0.5em;
     border-radius: 0.5rem;
     cursor: pointer;
     &:hover {
