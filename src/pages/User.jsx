@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../apiConfig";
+import ErrorPopup from "../ErrorPopup";
 import styled from "styled-components";
 
 const PageContainer = styled.div`
@@ -91,59 +92,18 @@ const StyledInputWrapper = styled.input`
 `;
 
 let inputCounter = 0;
-
 export default function User() {
   const [userData, setUserData] = useState([]);
   const [genreData, setGenreData] = useState([]);
-  const [personGenreData, setPersonGenreData] = useState([]);
-  const [newGenre, setNewGenre] = useState("");
+  const [personGenreData, setPersonGenreData] = useState({});
   const [genreInputs, setGenreInputs] = useState([]);
   // const [movies, setMovies] = useState([]);
   // const [newMovie, setNewMovie] = useState("");
   // const [newRating, setNewRating] = useState("");
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchUserData();
-    fetchGenreData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      const response = await api.get("/api/person/");
-      setUserData(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const fetchGenreData = async () => {
-    try {
-      const response = await api.get("/api/genre/");
-      setGenreData(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const fetchPersonGenreData = async (personName) => {
-    try {
-      const response = await api.get(`/api/person/genre?name=${personName}`);
-      setPersonGenreData(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const addGenreToPerson = async (personId, genreId) => {
-    try {
-      const response = await api.post("/api/person/genre", {
-        PersonId: personId,
-        GenreId: genreId,
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleCloseError = () => {
+    setError(null);
   };
 
   const addGenreInput = (personId) => {
@@ -162,6 +122,75 @@ export default function User() {
     setGenreInputs(updatedInputs);
   };
 
+  useEffect(() => {
+    fetchUserData();
+    fetchGenreData();
+  }, []);
+
+  useEffect(() => {
+    userData.forEach((person) => {
+      fetchPersonGenreData(person.name);
+    });
+  }, [userData]);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get("/api/person/");
+      setUserData(response.data);
+    } catch (error) {
+      setError("An error occurred while fetching user data.");
+      console.error("An error occurred while fetching user data:", error);
+    }
+  };
+
+  const fetchGenreData = async () => {
+    try {
+      const response = await api.get("/api/genre/");
+      setGenreData(response.data);
+    } catch (error) {
+      setError("An error occurred while fetching genre data.");
+      console.error("An error occurred while fetching genre data:", error);
+    }
+  };
+
+  const fetchPersonGenreData = async (personName) => {
+    try {
+      const response = await api.get(`/api/person/genre?name=${personName}`);
+      const genres = response.data;
+      setPersonGenreData((prevData) => ({
+        ...prevData,
+        [personName]: genres,
+      }));
+    } catch (error) {
+      setError(
+        `An error occurred while fetching genre data for ${personName}.`
+      );
+      console.error(
+        `An error occurred while fetching genre data for ${personName}:`,
+        error
+      );
+    }
+  };
+
+  const addGenreToPerson = async (personId, genreName) => {
+    try {
+      const genre = genreData.find((genre) => genre === genreName);
+      if (!genre) {
+        setError(`Invalid genre: ${genreName}`);
+        return;
+      }
+
+      const response = await api.post("/api/person/genre", {
+        PersonId: personId,
+        GenreId: genre.id,
+      });
+      console.log(response.data);
+    } catch (error) {
+      setError("An error occurred while adding genre to person.");
+      console.error("An error occurred while adding genre to person:", error);
+    }
+  };
+
   const addMovie = () => {
     //
   };
@@ -169,7 +198,7 @@ export default function User() {
   return (
     <PageContainer>
       {userData.length > 0 ? (
-        userData.map((person, index) => (
+        userData.map((person) => (
           <UserWrapper key={person.personId}>
             <UserDetails>
               <h1>User</h1>
@@ -179,18 +208,18 @@ export default function User() {
             <FormWrapper>
               <SectionHeading>Genres</SectionHeading>
               <List>
-                {personGenreData[index]?.map((genre) => (
+                {personGenreData[person.name]?.map((genre) => (
                   <ListItem key={genre}>{genre}</ListItem>
                 ))}
               </List>
-              {genreInputs.map((input, genreIndex) => {
+              {genreInputs.map((input) => {
                 if (input.personId === person.personId) {
                   return (
                     <Form key={input.id}>
                       <StyledInputWrapper
                         type="text"
                         value={input.genre}
-                        placeholder="Genre"
+                        placeholder="Genre Name"
                         onChange={(e) =>
                           updateGenreInput(input.id, e.target.value)
                         }
@@ -241,6 +270,7 @@ export default function User() {
       ) : (
         <p>Loading user data...</p>
       )}
+      {error && <ErrorPopup message={error} onClose={handleCloseError} />}
     </PageContainer>
   );
 }
