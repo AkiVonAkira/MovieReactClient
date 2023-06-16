@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import api from "../apiConfig";
 import ErrorPopup from "../ErrorPopup";
-import styled from "styled-components";
 
-const PageContainer = styled.div`
+const UserContainer = styled.div`
   display: flex;
   flex-direction: column;
   flex-flow: row;
@@ -254,7 +254,7 @@ export default function User() {
   return (
     <>
       <Title>Users</Title>
-      <PageContainer>
+      <UserContainer>
         {userData.length > 0 ? (
           userData.map((person) => (
             <UserWrapper key={person.personId}>
@@ -345,7 +345,7 @@ export default function User() {
           <p>Loading user data...</p>
         )}
         {error && <ErrorPopup message={error} onClose={handleCloseError} />}
-      </PageContainer>
+      </UserContainer>
     </>
   );
 }

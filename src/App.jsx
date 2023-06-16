@@ -10,7 +10,6 @@ import GlobalStyles from "./GlobalStyles";
 // Pages
 import Home from "./pages/Home";
 import User from "./pages/User";
-import Genres from "./pages/Movies/genres";
 import NotFound from "./pages/NotFound";
 
 // Layouts
@@ -22,9 +21,7 @@ const router = createBrowserRouter(
     <Route path="/" element={<RootLayout />}>
       <Route index element={<Home />} />
       <Route path="user" element={<User />} />
-      <Route path="movies" element={<MovieLayout />}>
-        <Route path="genres" element={<Genres />} />
-      </Route>
+      <Route path="movies" element={<MovieLayout />} />
 
       <Route path="*" element={<NotFound />} />
     </Route>

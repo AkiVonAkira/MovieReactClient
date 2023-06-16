@@ -1,64 +1,95 @@
-import React, { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import api from "../apiConfig";
+import ErrorPopup from "../ErrorPopup";
 
 const MovieLayoutContainer = styled.div`
-  .title {
-    font-size: 24px;
-    margin-bottom: 16px;
-  }
-
-  .description {
-    margin-bottom: 16px;
-  }
-
-  nav {
-    margin-bottom: 16px;
-  }
+  display: flex;
+  flex-direction: column;
+  flex-flow: row;
+  flex-wrap: wrap;
+  padding: 1.5rem;
+  gap: 1em;
+  background-color: var(--primary);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 20px -15px black;
 `;
 
-const GenreNavLink = styled(NavLink)`
-  text-decoration: none;
-  padding: 6px;
-  border-radius: 4px;
-  color: white;
-  transition: background 0.3s;
+const MovieWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 0.5rem;
+  background-color: var(--secondary);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 20px -15px black;
+  gap: 1em;
+`;
 
-  &.active {
-    background: var(--primary);
-  }
+const Title = styled.h1`
+  font-size: 3rem;
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+`;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
+const Description = styled.p`
+  font-size: 1rem;
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  padding-bottom: 1em;
 `;
 
 const MovieLayout = () => {
-  const [isGenresOpen, setIsGenresOpen] = useState(false);
+  const [movies, setMovies] = useState([]);
+  const [error, setError] = useState(null);
 
-  const toggleGenres = () => {
-    setIsGenresOpen((prevIsGenresOpen) => !prevIsGenresOpen);
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  const fetchMovies = async () => {
+    try {
+      const response = await api.get("/api/movie/");
+      setMovies(response.data);
+    } catch (error) {
+      setError("An error occurred while fetching movie data.");
+      console.error("An error occurred while fetching movie data:", error);
+    }
+  };
+
+  const handleCloseError = () => {
+    setError(null);
   };
 
   return (
-    <MovieLayoutContainer>
-      <h2 className="title">Movies</h2>
-      <p className="description">
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nulla, fugit!
-      </p>
+    <>
+      <Title>Movies</Title>
+      <Description>Browse through the available movies below:</Description>
+      <MovieLayoutContainer>
+        {movies.map((movie) => (
+          <MovieWrapper key={movie.id}>
+            <h3>{movie.movieName}</h3>
+            <p>
+              <strong>Movie Link:</strong>{" "}
+              <a
+                href={movie.movieLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {movie.movieLink}
+              </a>
+            </p>
+            <p>
+              <strong>TMDB ID:</strong> {movie.tmbdId}
+            </p>
+          </MovieWrapper>
+        ))}
+      </MovieLayoutContainer>
 
-      <nav>
-        <GenreNavLink
-          to="genres"
-          activeClassName="active"
-          onClick={toggleGenres}
-        >
-          {isGenresOpen ? "Close Genres" : "View the Genres"}
-        </GenreNavLink>
-      </nav>
-
-      {isGenresOpen && <Outlet />}
-    </MovieLayoutContainer>
+      {error && <ErrorPopup message={error} onClose={handleCloseError} />}
+    </>
   );
 };
 
