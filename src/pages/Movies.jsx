@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import api from "../apiConfig";
 import ErrorPopup from "../components/ErrorPopup";
@@ -46,6 +46,13 @@ const Movies = () => {
   const [movies, setMovies] = useState([]);
   const [error, setError] = useState(null);
 
+  const handleError = (errorMessage) => {
+    setError(errorMessage);
+  };
+
+  const handleCloseError = () => {
+    setError(null);
+  };
   useEffect(() => {
     fetchMovies();
   }, []);
@@ -58,14 +65,6 @@ const Movies = () => {
       handleError("An error occurred while fetching movie data.");
       console.error("An error occurred while fetching movie data:", error);
     }
-  };
-
-  const handleError = (errorMessage) => {
-    setError(errorMessage);
-  };
-
-  const handleCloseError = () => {
-    setError(null);
   };
 
   return (

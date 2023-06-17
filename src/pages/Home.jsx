@@ -170,6 +170,14 @@ const Home = () => {
   const [moviesDisplayed, setMoviesDisplayed] = useState(0);
   const POSTER_PREFIX = "https://image.tmdb.org/t/p/original";
 
+  const handleError = (errorMessage) => {
+    setError(errorMessage);
+  };
+
+  const handleCloseError = () => {
+    setError(null);
+  };
+
   useEffect(() => {
     document.title = "Movie list";
     fetchMovies(1, "All");
@@ -233,7 +241,7 @@ const Home = () => {
 
   const getGenreNames = (genreIds) => {
     if (!genreData) {
-      setError("Could not find any genre data.");
+      handleError("Could not find any genre data.");
       return null;
     }
 
@@ -242,7 +250,7 @@ const Home = () => {
     );
     return genres.map((genre) => {
       if (!genre) {
-        setError("Could not find any genre data.");
+        handleError("Could not find any genre data.");
         return null;
       }
       return <p key={genre.id}>{genre.name}</p>;
@@ -325,7 +333,9 @@ const Home = () => {
         {currentPage !== 1 && (
           <button onClick={() => fetchMovies(1, activeGenre)}>{"...1"}</button>
         )}
-        <p>Page: {currentPage}</p>
+        <p>
+          Page: {currentPage} - {moviesDisplayed} Movies
+        </p>
         <button onClick={() => handlePageChange(currentPage + 1)}>{">"}</button>
       </PageWrapper>
       {filteredMovies.map((movie) => (
@@ -341,7 +351,7 @@ const Home = () => {
           </MovieInfo>
         </MovieWrapper>
       ))}
-      {error && <ErrorPopup message={error} onClose={() => setError(null)} />}
+      {error && <ErrorPopup message={error} onClose={handleCloseError} />}
     </HomeContainer>
   );
 };

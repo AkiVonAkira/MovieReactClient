@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import api from "../apiConfig";
@@ -114,6 +115,10 @@ export default function User() {
   const [inputs, setInputs] = useState([]);
   const [error, setError] = useState(null);
 
+  const handleError = (errorMessage) => {
+    setError(errorMessage);
+  };
+
   const handleCloseError = () => {
     setError(null);
   };
@@ -158,10 +163,10 @@ export default function User() {
       setUserData(response.data);
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        setError("An error occurred while fetching user data.");
+        handleError("An error occurred while fetching user data.");
         console.error("An error occurred while fetching user data:", error);
       } else {
-        setError("An error occurred. The server may be down.");
+        handleError("An error occurred. The server may be down.");
         console.error("An error occurred:", error);
       }
     }
@@ -172,7 +177,7 @@ export default function User() {
       const response = await api.get("/api/genre/");
       setGenreData(response.data);
     } catch (error) {
-      setError("An error occurred while fetching genre data.");
+      handleError("An error occurred while fetching genre data.");
       console.error("An error occurred while fetching genre data:", error);
     }
   };
@@ -182,7 +187,7 @@ export default function User() {
       const response = await api.get("/api/movie/");
       setMovieData(response.data);
     } catch (error) {
-      setError("An error occurred while fetching movie data.");
+      handleError("An error occurred while fetching movie data.");
       console.error("An error occurred while fetching movie data:", error);
     }
   };
@@ -196,7 +201,7 @@ export default function User() {
         [personName]: genres,
       }));
     } catch (error) {
-      setError(
+      handleError(
         `An error occurred while fetching genre data for ${personName}.`
       );
       console.error(
@@ -215,7 +220,7 @@ export default function User() {
         [personName]: movies,
       }));
     } catch (error) {
-      setError(
+      handleError(
         `An error occurred while fetching movie data for ${personName}.`
       );
       console.error(
@@ -231,7 +236,7 @@ export default function User() {
         (genre) => genreName.toLowerCase() === genre.name.toLowerCase()
       );
       if (!genre) {
-        setError(`Invalid genre: ${genreName}`);
+        handleError(`Invalid genre: ${genreName}`);
         return;
       }
       console.log(genre.genreId);
@@ -242,7 +247,7 @@ export default function User() {
       });
       console.log(response.data);
     } catch (error) {
-      setError("An error occurred while adding genre to person.");
+      handleError("An error occurred while adding genre to person.");
       console.error("An error occurred while adding genre to person:", error);
     }
   };
