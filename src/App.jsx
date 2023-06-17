@@ -2,7 +2,7 @@ import {
   createBrowserRouter,
   Route,
   createRoutesFromElements,
-  RouterProvider,
+  RouterProvider
 } from "react-router-dom";
 import GlobalStyles from "./GlobalStyles";
 
@@ -18,7 +18,7 @@ import RootLayout from "./layouts/RootLayout";
 const routes = createRoutesFromElements(
   <Route path="/" element={<RootLayout />}>
     <Route index element={<Home />} />
-    <Route path="user" element={<User />} />
+    <Route path="user/" element={<User />} />
     <Route path="movies" element={<Movies />} />
     <Route path="*" element={<NotFound />} />
   </Route>

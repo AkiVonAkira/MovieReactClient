@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import api from "../apiConfig";
 import ErrorPopup from "../components/ErrorPopup";
@@ -25,6 +26,7 @@ const UserWrapper = styled.div`
   border-radius: 0.5rem;
   box-shadow: 0 10px 20px -15px black;
   gap: 1em;
+  justify-content: space-between;
 `;
 
 const FormWrapper = styled.div`
@@ -32,7 +34,6 @@ const FormWrapper = styled.div`
   flex-direction: column;
   padding: 1rem;
   border-radius: 0.5rem;
-  /* gap: 1em; */
 `;
 
 const UserDetails = styled.div`
@@ -104,14 +105,15 @@ const StyledInputWrapper = styled.input`
 
 let inputCounter = 0;
 export default function User() {
+  const { userId } = useParams();
   const [userData, setUserData] = useState([]);
   const [genreData, setGenreData] = useState([]);
   const [personGenreData, setPersonGenreData] = useState({});
   const [movieData, setMovieData] = useState([]);
   const [personMovieData, setPersonMovieData] = useState({});
-  // const [movies, setMovies] = useState([]);
-  // const [newMovie, setNewMovie] = useState("");
-  // const [newRating, setNewRating] = useState("");
+  const [movies, setMovies] = useState([]);
+  const [newMovie, setNewMovie] = useState("");
+  const [newRating, setNewRating] = useState("");
   const [inputs, setInputs] = useState([]);
   const [error, setError] = useState(null);
 
@@ -148,6 +150,7 @@ export default function User() {
     fetchUserData();
     fetchGenreData();
     fetchMovieData();
+    fetchMovies();
   }, []);
 
   useEffect(() => {
@@ -156,6 +159,16 @@ export default function User() {
       fetchPersonMovieData(person.name);
     });
   }, [userData]);
+
+  const fetchMovies = async () => {
+    try {
+      const response = await api.get("/api/movie/");
+      setMovies(response.data);
+    } catch (error) {
+      handleError("An error occurred while fetching movie data.");
+      console.error("An error occurred while fetching movie data:", error);
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -198,7 +211,7 @@ export default function User() {
       const genres = response.data;
       setPersonGenreData((prevData) => ({
         ...prevData,
-        [personName]: genres,
+        [personName]: genres
       }));
     } catch (error) {
       handleError(
@@ -217,7 +230,7 @@ export default function User() {
       const movies = response.data;
       setPersonMovieData((prevData) => ({
         ...prevData,
-        [personName]: movies,
+        [personName]: movies
       }));
     } catch (error) {
       handleError(
@@ -232,19 +245,25 @@ export default function User() {
 
   const addGenreToPerson = async (personId, genreName) => {
     try {
+      const person = userData.find((person) => person.personId === personId);
+      if (!person) {
+        handleError("Invalid person ID");
+        return;
+      }
+
       const genre = genreData.find(
-        (genre) => genreName.toLowerCase() === genre.name.toLowerCase()
+        (genre) => genreName.toLowerCase() === genre.genreName.toLowerCase()
       );
       if (!genre) {
         handleError(`Invalid genre: ${genreName}`);
         return;
       }
-      console.log(genre.genreId);
 
       const response = await api.post("/api/person/genre", {
-        personId: personId,
-        genreId: genre.genreId,
+        personId: person.personId,
+        genreId: genre.genreId
       });
+
       console.log(response.data);
     } catch (error) {
       handleError("An error occurred while adding genre to person.");
@@ -252,8 +271,42 @@ export default function User() {
     }
   };
 
-  const addMovie = () => {
-    //
+  const addMovie = async (person) => {
+    person = userData.find((person) => person.personId === person.personId);
+    const personId = person.personId;
+    const movieName = inputs.newMovie;
+    const rating = parseInt(newRating.trim());
+
+    try {
+      const movie = movieData.find(
+        (movie) => movie.movieName.toLowerCase() === movieName.toLowerCase()
+      );
+
+      if (!movie) {
+        handleError(`Movie '${movieName}' not found.`);
+        return;
+      }
+
+      const response = await api.post("/api/rating/person", {
+        movieId: movie.movieId,
+        personId: personId,
+        rating: rating
+      });
+
+      setMovieData((prevData) => [...prevData, movie]);
+      setPersonMovieData((prevData) => ({
+        ...prevData,
+        [person.name]: [...prevData[person.name], movie]
+      }));
+
+      setNewMovie("");
+      setNewRating("");
+
+      console.log(response.data);
+    } catch (error) {
+      handleError("An error occurred while adding the movie.");
+      console.error("An error occurred while adding the movie:", error);
+    }
   };
 
   return (
@@ -328,21 +381,39 @@ export default function User() {
                   )}
                 </List>
 
-                {/*<Form>
-                  <StyledInputWrapper
-                    type="text"
-                    value={newMovie}
-                    placeholder="Movie Name"
-                    onChange={(e) => setNewMovie(e.target.value)}
-                  />
-                  <StyledInputWrapper
-                    type="text"
-                    value={newRating}
-                    placeholder="Movie Rating"
-                    onChange={(e) => setNewRating(e.target.value)}
-                  />
-                  <button onClick={addMovie}>Add Movie</button>
-                </Form> */}
+                {inputs
+                  .filter((input) => input.personId === person.personId)
+                  .map((input) => (
+                    <Form key={input.id}>
+                      <StyledInputWrapper
+                        type="text"
+                        value={input.newMovie}
+                        placeholder="Movie Name"
+                        onChange={(e) =>
+                          updateInput(input.id, e.target.value, "movieName")
+                        }
+                      />
+                      <StyledInputWrapper
+                        type="text"
+                        value={input.newRating}
+                        placeholder="Rating Name"
+                        onChange={(e) =>
+                          updateInput(input.id, e.target.value, "movieRating")
+                        }
+                      />
+                      {inputs.filter(
+                        (input) => input.personId === person.personId
+                      ).length === 1 ? (
+                        <button onClick={addMovie}>Add Movie</button>
+                      ) : null}
+                    </Form>
+                  ))}
+                {inputs.filter((input) => input.personId === person.personId)
+                  .length === 0 && (
+                  <button onClick={() => addInput("movie", person.personId)}>
+                    Add Movie Input
+                  </button>
+                )}
               </FormWrapper>
             </UserWrapper>
           ))
