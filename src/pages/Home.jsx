@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import styled from "styled-components";
 import api from "../apiConfig";
 import ErrorPopup from "../ErrorPopup";
@@ -17,7 +18,7 @@ const HomeContainer = styled.div`
 
 const MovieWrapper = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex-grow: 1;
   padding: 0.5rem;
   background-color: var(--secondary);
@@ -59,27 +60,56 @@ const StyledInputWrapper = styled.input`
   }
 `;
 
+const MovieImage = styled.img`
+  object-fit: cover;
+  width: 12rem;
+  aspect-ratio: 5/8;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 20px -15px black;
+`;
+
+const MovieInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
 const Home = () => {
   const [searchedGenre, setSearchedGenre] = useState("");
   const [movies, setMovies] = useState([]);
   const [genreData, setGenreData] = useState([]);
   const [error, setError] = useState(null);
+  const POSTER_PREFIX = "https://image.tmdb.org/t/p/original";
 
   useEffect(() => {
+    document.title = "Movie list";
+    fetchMovies();
     fetchGenreData();
   }, []);
 
+  // const fetchGenreData = async () => {
+  //   try {
+  //     const response = await api.get("/api/genre/");
+  //     setGenreData(response.data);
+  //   } catch (error) {
+  //     setError("An error occurred while fetching genre data.");
+  //     console.error("An error occurred while fetching genre data:", error);
+  //   }
+  // };
+
   const fetchGenreData = async () => {
     try {
-      const response = await api.get("/api/genre/");
-      setGenreData(response.data);
+      const response = await axios.get(
+        "https://api.themoviedb.org/3/genre/movie/list?language=en&api_key=04cb763c501f57fb2385cbde6cf894b4"
+      );
+      setGenreData(response.data.genres);
     } catch (error) {
       setError("An error occurred while fetching genre data.");
       console.error("An error occurred while fetching genre data:", error);
     }
   };
 
-  const fetchMovies = async (genreName) => {
+  const fetchMoviesByGenre = async (genreName) => {
     try {
       const response = await api.get(
         `/api/movie/discover/?genreName=${genreName}`
@@ -91,14 +121,33 @@ const Home = () => {
     }
   };
 
+  const fetchMovies = () => {
+    axios
+      .get(
+        `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&api_key=04cb763c501f57fb2385cbde6cf894b4`
+      )
+      .then((res) => {
+        setMovies(res.data.results);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+  const getGenreName = (genreId) => {
+    const genre = genreData.find((genre) => genre.id === genreId);
+    return genre ? genre.name : "";
+  };
+
   const handleGenreSearch = (event) => {
     const genre = event.target.value;
     setSearchedGenre(genre);
-    if (genreData.includes(genre)) {
-      fetchMovies(genre);
-    } else {
-      setMovies([]);
+    if (genreData.includes(genre.genre)) {
+      fetchMoviesByGenre(genre);
     }
+  };
+
+  const isValidGenre = (genre) => {
+    return genreData.find((genreItem) => genreItem.name === genre);
   };
 
   return (
@@ -111,18 +160,18 @@ const Home = () => {
           onChange={handleGenreSearch}
         />
       </SearchBoxWrapper>
-      {movies.map((movie) => (
-        <MovieWrapper key={movie.name}>
-          <h3>{movie.movieName}</h3>
-          <p>
-            <strong>Movie Link:</strong>{" "}
-            <a href={movie.movieLink} target="_blank" rel="noopener noreferrer">
-              {movie.movieLink}
-            </a>
-          </p>
-          <p>
-            <strong>TMDB ID:</strong> {movie.tmbdId}
-          </p>
+      {movies.map((movies) => (
+        <MovieWrapper key={movies.id}>
+          <MovieImage
+            src={POSTER_PREFIX + movies.poster_path}
+            alt="{movies.title} poster"
+          />
+          <MovieInfo>
+            <h2>{movies.title}</h2>
+            <p>{movies.overview}</p>
+            <h3>Rating:{movies.vote_average}</h3>
+            <p>Genre: {getGenreName(movies.genre_ids[0])}</p>
+          </MovieInfo>
         </MovieWrapper>
       ))}
       {error && <ErrorPopup message={error} onClose={() => setError(null)} />}
