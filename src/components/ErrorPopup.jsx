@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import styled from "styled-components";
 
 const PopupContainer = styled.div`
@@ -42,6 +43,11 @@ const ErrorPopup = ({ message, onClose }) => {
       </PopupContent>
     </PopupContainer>
   );
+};
+
+ErrorPopup.propTypes = {
+  message: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default ErrorPopup;

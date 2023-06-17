@@ -16,6 +16,7 @@ const GlobalStyles = createGlobalStyle`
 
     --primary: #bc4123;
     --secondary: #2b3452;
+    --accent: #0086a5;
   }
 
   body {

@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import styled from "styled-components";
 
@@ -36,10 +35,12 @@ const NavLinkStyled = styled(NavLink)`
 
   &.active {
     background: var(--primary);
+    box-shadow: 0 10px 20px -15px black;
   }
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 20px -15px black;
   }
 `;
 
@@ -54,13 +55,13 @@ const RootLayout = () => {
       <Header>
         <h1 className="text-3xl font-bold ">10/10 Movies</h1>
         <Nav>
-          <NavLinkStyled to="/" activeclassname="active">
+          <NavLinkStyled to="/" activeclassname="active" exact="true">
             Home
           </NavLinkStyled>
-          <NavLinkStyled to="user" activeclassname="active">
+          <NavLinkStyled to="/user" activeclassname="active">
             User
           </NavLinkStyled>
-          <NavLinkStyled to="movies" activeclassname="active">
+          <NavLinkStyled to="/movies" activeclassname="active">
             Movies
           </NavLinkStyled>
         </Nav>

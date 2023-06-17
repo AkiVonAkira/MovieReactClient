@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   createBrowserRouter,
   Route,
@@ -10,23 +9,22 @@ import GlobalStyles from "./GlobalStyles";
 // Pages
 import Home from "./pages/Home";
 import User from "./pages/User";
+import Movies from "./pages/Movies";
 import NotFound from "./pages/NotFound";
 
 // Layouts
 import RootLayout from "./layouts/RootLayout";
-import MovieLayout from "./layouts/MovieLayout";
 
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/" element={<RootLayout />}>
-      <Route index element={<Home />} />
-      <Route path="user" element={<User />} />
-      <Route path="movies" element={<MovieLayout />} />
-
-      <Route path="*" element={<NotFound />} />
-    </Route>
-  )
+const routes = createRoutesFromElements(
+  <Route path="/" element={<RootLayout />}>
+    <Route index element={<Home />} />
+    <Route path="user" element={<User />} />
+    <Route path="movies" element={<Movies />} />
+    <Route path="*" element={<NotFound />} />
+  </Route>
 );
+
+const router = createBrowserRouter(routes);
 
 function App() {
   return (

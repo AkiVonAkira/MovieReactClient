@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import api from "../apiConfig";
-import ErrorPopup from "../ErrorPopup";
+import ErrorPopup from "../components/ErrorPopup";
 
 const UserContainer = styled.div`
   display: flex;
@@ -129,7 +129,7 @@ export default function User() {
     }
   };
 
-  const updateInput = (type, inputId, value) => {
+  const updateInput = (inputId, value, type) => {
     const updatedInputs = inputs.map((input) => {
       if (input.id === inputId) {
         return { ...input, [type]: value };

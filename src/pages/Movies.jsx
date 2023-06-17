@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import api from "../apiConfig";
-import ErrorPopup from "../ErrorPopup";
+import ErrorPopup from "../components/ErrorPopup";
 
 const MovieLayoutContainer = styled.div`
   display: flex;
@@ -41,7 +42,7 @@ const Description = styled.p`
   padding-bottom: 1em;
 `;
 
-const MovieLayout = () => {
+const Movies = () => {
   const [movies, setMovies] = useState([]);
   const [error, setError] = useState(null);
 
@@ -54,9 +55,13 @@ const MovieLayout = () => {
       const response = await api.get("/api/movie/");
       setMovies(response.data);
     } catch (error) {
-      setError("An error occurred while fetching movie data.");
+      handleError("An error occurred while fetching movie data.");
       console.error("An error occurred while fetching movie data:", error);
     }
+  };
+
+  const handleError = (errorMessage) => {
+    setError(errorMessage);
   };
 
   const handleCloseError = () => {
@@ -82,7 +87,7 @@ const MovieLayout = () => {
               </a>
             </p>
             <p>
-              <strong>TMDB ID:</strong> {movie.tmbdId}
+              <strong>TMDB ID:</strong> {movie.tmdbId}
             </p>
           </MovieWrapper>
         ))}
@@ -93,4 +98,4 @@ const MovieLayout = () => {
   );
 };
 
-export default MovieLayout;
+export default Movies;
