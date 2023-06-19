@@ -32,6 +32,8 @@ const GlobalStyles = createGlobalStyle`
     color: #fff;
     margin: 0;
     padding: 0;
+    transition: 0.2s;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
   p {
@@ -40,7 +42,7 @@ const GlobalStyles = createGlobalStyle`
 
   button {
     display: flex;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
     background-color: var(--primary);
     font-size: 1em;

@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const PopupContainer = styled.div`
@@ -11,42 +12,68 @@ const PopupContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: auto;
 `;
 
-const PopupContent = styled.div`
+const PopupContent = styled.ul`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
   background: var(--primary);
   color: #ffffff;
   padding: 2rem;
   border-radius: 0.45rem;
   font-family: Roboto, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   box-shadow: 0 10px 20px -15px black;
+  max-height: 50vh;
+  overflow-y: auto;
 `;
 
-const ErrorMessage = styled.p`
+const ErrorMessage = styled.li`
   font-size: 1.25rem;
+  list-style: none;
 `;
 
-const ErrorPopup = ({ message, onClose }) => {
-  const handleOverlayClick = (event) => {
-    // Check if the clicked element is the background overlay
-    if (event.target === event.currentTarget) {
-      onClose();
+const ErrorPopup = ({ messages, onClose, length }) => {
+  const [errors, setErrors] = useState([]);
+
+  useEffect(() => {
+    const storedErrors = localStorage.getItem("errors");
+    if (storedErrors) {
+      setErrors(JSON.parse(storedErrors));
     }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("errors", JSON.stringify(errors));
+  }, [errors]);
+
+  const handleOverlayClick = () => {
+    clearErrors();
+  };
+
+  const clearErrors = () => {
+    setErrors([]);
+    localStorage.removeItem("errors");
+    onClose();
   };
 
   return (
     <PopupContainer onClick={handleOverlayClick}>
       <PopupContent>
-        <h2>Error</h2>
-        <ErrorMessage>{message}</ErrorMessage>
+        <h2>{length} Errors</h2>
+        {messages.map((message, index) => (
+          <ErrorMessage key={index}>{message}</ErrorMessage>
+        ))}
       </PopupContent>
     </PopupContainer>
   );
 };
 
 ErrorPopup.propTypes = {
-  message: PropTypes.string.isRequired,
+  messages: PropTypes.arrayOf(PropTypes.string).isRequired,
   onClose: PropTypes.func.isRequired,
+  length: PropTypes.objectOf(PropTypes.number)
 };
 
 export default ErrorPopup;

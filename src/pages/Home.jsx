@@ -3,6 +3,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import ErrorPopup from "../components/ErrorPopup";
+import {
+  handleError,
+  clearErrors,
+  getErrorsFromLocalStorage
+} from "../utils/ErrorUtils";
 
 const HomeContainer = styled.div`
   display: flex;
@@ -163,19 +168,21 @@ const Home = () => {
   const [searchedGenre, setSearchedGenre] = useState("");
   const [movies, setMovies] = useState([]);
   const [genreData, setGenreData] = useState([]);
-  const [error, setError] = useState(null);
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [activeGenre, setActiveGenre] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [moviesDisplayed, setMoviesDisplayed] = useState(0);
   const POSTER_PREFIX = "https://image.tmdb.org/t/p/original";
+  const [errors, setErrors] = useState([]);
 
-  const handleError = (errorMessage) => {
-    setError(errorMessage);
-  };
+  useEffect(() => {
+    fetchMovies();
+    setErrors(getErrorsFromLocalStorage());
+  }, []);
 
   const handleCloseError = () => {
-    setError(null);
+    setErrors([]);
+    clearErrors();
   };
 
   useEffect(() => {
@@ -211,7 +218,10 @@ const Home = () => {
         setMoviesDisplayed(res.data.results.length);
       })
       .catch((error) => {
-        console.log(error);
+        handleError(
+          "An error occurred while fetching movies from TMDB.",
+          error
+        );
       });
   };
 
@@ -222,8 +232,7 @@ const Home = () => {
       );
       setGenreData(response.data.genres);
     } catch (error) {
-      setError("An error occurred while fetching genre data.");
-      console.error("An error occurred while fetching genre data:", error);
+      handleError("An error occurred while fetching genre data.", error);
     }
   };
 
@@ -240,7 +249,7 @@ const Home = () => {
   };
 
   const getGenreNames = (genreIds) => {
-    if (!genreData) {
+    if (!genreIds || genreData.length === 0) {
       handleError("Could not find any genre data.");
       return null;
     }
@@ -351,7 +360,13 @@ const Home = () => {
           </MovieInfo>
         </MovieWrapper>
       ))}
-      {error && <ErrorPopup message={error} onClose={handleCloseError} />}
+      {errors.length > 0 && (
+        <ErrorPopup
+          messages={errors.map((error) => error.message)}
+          onClose={handleCloseError}
+          length={errors.length}
+        />
+      )}
     </HomeContainer>
   );
 };

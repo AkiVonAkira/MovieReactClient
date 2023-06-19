@@ -1,9 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import api from "../apiConfig";
 import ErrorPopup from "../components/ErrorPopup";
+import {
+  handleError,
+  clearErrors,
+  getErrorsFromLocalStorage
+} from "../utils/ErrorUtils";
 
 const UserContainer = styled.div`
   display: flex;
@@ -76,7 +80,7 @@ const Form = styled.form`
 `;
 
 const StyledInputWrapper = styled.input`
-  flex: 1;
+  flex: 4;
   height: 2rem;
   width: 100%;
   border-radius: 0.5rem;
@@ -95,61 +99,126 @@ const StyledInputWrapper = styled.input`
 
   &:focus-visible {
     box-shadow: 0 10px 20px -15px black;
+    border: 2px solid #ccc;
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }
+  &[type="number"] {
+    flex: 1;
+    appearance: textfield;
+  }
 `;
 
 let inputCounter = 0;
 export default function User() {
-  const { userId } = useParams();
   const [userData, setUserData] = useState([]);
   const [genreData, setGenreData] = useState([]);
   const [personGenreData, setPersonGenreData] = useState({});
-  const [movieData, setMovieData] = useState([]);
   const [personMovieData, setPersonMovieData] = useState({});
   const [movies, setMovies] = useState([]);
-  const [newMovie, setNewMovie] = useState("");
-  const [newRating, setNewRating] = useState("");
   const [inputs, setInputs] = useState([]);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState([]);
 
-  const handleError = (errorMessage) => {
-    setError(errorMessage);
-  };
+  useEffect(() => {
+    fetchMovies();
+    setErrors(getErrorsFromLocalStorage());
+  }, []);
 
   const handleCloseError = () => {
-    setError(null);
+    setErrors([]);
+    clearErrors();
   };
 
   const addInput = (type, personId) => {
-    const existingInputs = inputs.filter(
-      (input) => input.personId === personId
+    const existingInput = inputs.find(
+      (input) => input.personId === personId && input.type === type
     );
-    if (existingInputs.length === 0) {
-      const newInput = { id: `input_${inputCounter}`, personId, [type]: "" };
-      inputCounter++;
-      setInputs([...inputs, newInput]);
+    if (existingInput) {
+      return;
     }
+
+    const newInput = {
+      id: `input_${inputCounter}`,
+      personId,
+      type,
+      newGenre: "",
+      newMovie: "",
+      newRating: ""
+    };
+    inputCounter++;
+    setInputs([...inputs, newInput]);
   };
 
-  const updateInput = (inputId, value, type) => {
+  const updateInput = (inputId, value, inputType) => {
     const updatedInputs = inputs.map((input) => {
       if (input.id === inputId) {
-        return { ...input, [type]: value };
+        return { ...input, [inputType]: value };
       }
       return input;
     });
     setInputs(updatedInputs);
   };
 
+  const renderGenreInputs = (personId) => {
+    const genreInputs = inputs.filter(
+      (input) => input.personId === personId && input.type === "genre"
+    );
+
+    return genreInputs.map((input) => (
+      <Form key={input.id}>
+        <StyledInputWrapper
+          type="text"
+          value={input.newGenre}
+          placeholder="Genre Name"
+          onChange={(e) => updateInput(input.id, e.target.value, "newGenre")}
+        />
+        {genreInputs.length === 1 ? (
+          <button onClick={() => addGenreToPerson(personId, input.newGenre)}>
+            Add Genre
+          </button>
+        ) : null}
+      </Form>
+    ));
+  };
+
+  const renderMovieInputs = (personId) => {
+    const movieInputs = inputs.filter(
+      (input) => input.personId === personId && input.type === "movie"
+    );
+
+    return movieInputs.map((input) => (
+      <Form key={input.id}>
+        <StyledInputWrapper
+          type="text"
+          value={input.newMovie}
+          placeholder="Movie Name"
+          onChange={(e) => updateInput(input.id, e.target.value, "newMovie")}
+        />
+        <StyledInputWrapper
+          type="number"
+          value={input.newRating}
+          placeholder="Rating"
+          min={0}
+          max={10}
+          onChange={(e) => updateInput(input.id, e.target.value, "newRating")}
+        />
+        {movieInputs.length === 1 ? (
+          <button
+            onClick={() => addMovie(personId, input.newMovie, input.newRating)}
+          >
+            Add Movie
+          </button>
+        ) : null}
+      </Form>
+    ));
+  };
+
   useEffect(() => {
     fetchUserData();
     fetchGenreData();
-    fetchMovieData();
     fetchMovies();
   }, []);
 
@@ -165,8 +234,7 @@ export default function User() {
       const response = await api.get("/api/movie/");
       setMovies(response.data);
     } catch (error) {
-      handleError("An error occurred while fetching movie data.");
-      console.error("An error occurred while fetching movie data:", error);
+      handleError("An error occurred while fetching movie data.", error);
     }
   };
 
@@ -176,11 +244,9 @@ export default function User() {
       setUserData(response.data);
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        handleError("An error occurred while fetching user data.");
-        console.error("An error occurred while fetching user data:", error);
+        handleError("An error occurred while fetching user data.", error);
       } else {
-        handleError("An error occurred. The server may be down.");
-        console.error("An error occurred:", error);
+        handleError("An error occurred. The server may be down.", error);
       }
     }
   };
@@ -190,18 +256,7 @@ export default function User() {
       const response = await api.get("/api/genre/");
       setGenreData(response.data);
     } catch (error) {
-      handleError("An error occurred while fetching genre data.");
-      console.error("An error occurred while fetching genre data:", error);
-    }
-  };
-
-  const fetchMovieData = async () => {
-    try {
-      const response = await api.get("/api/movie/");
-      setMovieData(response.data);
-    } catch (error) {
-      handleError("An error occurred while fetching movie data.");
-      console.error("An error occurred while fetching movie data:", error);
+      handleError("An error occurred while fetching genre data.", error);
     }
   };
 
@@ -215,10 +270,7 @@ export default function User() {
       }));
     } catch (error) {
       handleError(
-        `An error occurred while fetching genre data for ${personName}.`
-      );
-      console.error(
-        `An error occurred while fetching genre data for ${personName}:`,
+        `An error occurred while fetching genre data for ${personName}.`,
         error
       );
     }
@@ -226,18 +278,28 @@ export default function User() {
 
   const fetchPersonMovieData = async (personName) => {
     try {
-      const response = await api.get(`/api/person/movie?name=${personName}`);
-      const movies = response.data;
+      const response1 = await api.get(`/api/person/movie?name=${personName}`);
+      const response2 = await api.get(`/api/rating/person?name=${personName}`);
+      const movieData = response1.data;
+      const ratingData = response2.data;
+
+      const mergedData = movieData.map((movie) => {
+        const rating = ratingData.find(
+          (item) => item.movieName === movie.movieName
+        );
+        return {
+          ...movie,
+          rating: rating ? rating.rating : null
+        };
+      });
+
       setPersonMovieData((prevData) => ({
         ...prevData,
-        [personName]: movies
+        [personName]: mergedData
       }));
     } catch (error) {
       handleError(
-        `An error occurred while fetching movie data for ${personName}.`
-      );
-      console.error(
-        `An error occurred while fetching movie data for ${personName}:`,
+        `An error occurred while fetching movie data for ${personName}.`,
         error
       );
     }
@@ -266,21 +328,18 @@ export default function User() {
 
       console.log(response.data);
     } catch (error) {
-      handleError("An error occurred while adding genre to person.");
-      console.error("An error occurred while adding genre to person:", error);
+      handleError("An error occurred while adding genre to person.", error);
     }
   };
 
-  const addMovie = async (person) => {
-    person = userData.find((person) => person.personId === person.personId);
-    const personId = person.personId;
-    const movieName = inputs.newMovie;
-    const rating = parseInt(newRating.trim());
+  const addMovie = async (personId, newMovie, newRating) => {
+    const person = userData.find((person) => person.personId === personId);
+    const movieName = newMovie;
+    let rating = parseInt(newRating.trim());
+    rating = Math.max(0, Math.min(rating, 10));
 
     try {
-      const movie = movieData.find(
-        (movie) => movie.movieName.toLowerCase() === movieName.toLowerCase()
-      );
+      const movie = movies.find((movie) => movie.movieName === movieName);
 
       if (!movie) {
         handleError(`Movie '${movieName}' not found.`);
@@ -293,19 +352,15 @@ export default function User() {
         rating: rating
       });
 
-      setMovieData((prevData) => [...prevData, movie]);
+      setMovies((prevData) => [...prevData, movie]);
       setPersonMovieData((prevData) => ({
         ...prevData,
         [person.name]: [...prevData[person.name], movie]
       }));
 
-      setNewMovie("");
-      setNewRating("");
-
       console.log(response.data);
     } catch (error) {
-      handleError("An error occurred while adding the movie.");
-      console.error("An error occurred while adding the movie:", error);
+      handleError("An error occurred while adding the movie.", error);
     }
   };
 
@@ -324,44 +379,18 @@ export default function User() {
                 <SectionHeading>Genres</SectionHeading>
                 <List>
                   {personGenreData[person.name]?.length > 0 ? (
-                    personGenreData[person.name]?.map((genre, index) => (
+                    personGenreData[person.name].map((genre, index) => (
                       <ListItem key={`${genre}_${index}`}>{genre}</ListItem>
                     ))
                   ) : (
                     <ListItem>No Genres Found</ListItem>
                   )}
                 </List>
-
-                {inputs.map((input) => {
-                  if (input.personId === person.personId) {
-                    return (
-                      <Form key={input.id}>
-                        <StyledInputWrapper
-                          type="text"
-                          value={input.genre}
-                          placeholder="Genre Name"
-                          onChange={(e) =>
-                            updateInput(input.id, e.target.value, "genre")
-                          }
-                        />
-                        {inputs.filter(
-                          (input) => input.personId === person.personId
-                        ).length === 1 ? (
-                          <button
-                            onClick={() =>
-                              addGenreToPerson(person.personId, input.genre)
-                            }
-                          >
-                            Add Genre
-                          </button>
-                        ) : null}
-                      </Form>
-                    );
-                  }
-                  return null;
-                })}
-                {inputs.filter((input) => input.personId === person.personId)
-                  .length === 0 && (
+                {renderGenreInputs(person.personId)}
+                {inputs.filter(
+                  (input) =>
+                    input.personId === person.personId && input.type === "genre"
+                ).length === 0 && (
                   <button onClick={() => addInput("genre", person.personId)}>
                     Add Genre Input
                   </button>
@@ -371,45 +400,20 @@ export default function User() {
                 <SectionHeading>Movies</SectionHeading>
                 <List>
                   {personMovieData[person.name]?.length > 0 ? (
-                    personMovieData[person.name]?.map((movie, index) => (
+                    personMovieData[person.name].map((movie, index) => (
                       <ListItem key={`${movie}_${index}`}>
-                        {movie.movieName}
+                        {movie.movieName} ({movie.rating}/10)
                       </ListItem>
                     ))
                   ) : (
                     <ListItem>No Movies Found</ListItem>
                   )}
                 </List>
-
-                {inputs
-                  .filter((input) => input.personId === person.personId)
-                  .map((input) => (
-                    <Form key={input.id}>
-                      <StyledInputWrapper
-                        type="text"
-                        value={input.newMovie}
-                        placeholder="Movie Name"
-                        onChange={(e) =>
-                          updateInput(input.id, e.target.value, "movieName")
-                        }
-                      />
-                      <StyledInputWrapper
-                        type="text"
-                        value={input.newRating}
-                        placeholder="Rating Name"
-                        onChange={(e) =>
-                          updateInput(input.id, e.target.value, "movieRating")
-                        }
-                      />
-                      {inputs.filter(
-                        (input) => input.personId === person.personId
-                      ).length === 1 ? (
-                        <button onClick={addMovie}>Add Movie</button>
-                      ) : null}
-                    </Form>
-                  ))}
-                {inputs.filter((input) => input.personId === person.personId)
-                  .length === 0 && (
+                {renderMovieInputs(person.personId)}
+                {inputs.filter(
+                  (input) =>
+                    input.personId === person.personId && input.type === "movie"
+                ).length === 0 && (
                   <button onClick={() => addInput("movie", person.personId)}>
                     Add Movie Input
                   </button>
@@ -420,7 +424,13 @@ export default function User() {
         ) : (
           <p>Loading user data...</p>
         )}
-        {error && <ErrorPopup message={error} onClose={handleCloseError} />}
+        {errors.length > 0 && (
+          <ErrorPopup
+            messages={errors.map((error) => error.message)}
+            onClose={handleCloseError}
+            length={errors.length}
+          />
+        )}
       </UserContainer>
     </>
   );
