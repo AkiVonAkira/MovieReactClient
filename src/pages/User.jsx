@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import api from "../apiConfig";
+import api, { postInstance as postApi } from "../apiConfig";
 import ErrorPopup from "../components/ErrorPopup";
 import {
   handleError,
@@ -176,7 +176,9 @@ export default function User() {
           onChange={(e) => updateInput(input.id, e.target.value, "newGenre")}
         />
         {genreInputs.length === 1 ? (
-          <button onClick={() => addGenreToPerson(personId, input.newGenre)}>
+          <button
+            onClick={(evt) => addGenreToPerson(evt, personId, input.newGenre)}
+          >
             Add Genre
           </button>
         ) : null}
@@ -207,7 +209,9 @@ export default function User() {
         />
         {movieInputs.length === 1 ? (
           <button
-            onClick={() => addMovie(personId, input.newMovie, input.newRating)}
+            onClick={(evt) =>
+              addMovie(evt, personId, input.newMovie, input.newRating)
+            }
           >
             Add Movie
           </button>
@@ -305,14 +309,15 @@ export default function User() {
     }
   };
 
-  const addGenreToPerson = async (personId, genreName) => {
+  const addGenreToPerson = async (evt, personId, genreName) => {
+    evt.preventDefault();
     try {
       const person = userData.find((person) => person.personId === personId);
       if (!person) {
         handleError("Invalid person ID");
         return;
       }
-
+      console.log(person);
       const genre = genreData.find(
         (genre) => genreName.toLowerCase() === genre.genreName.toLowerCase()
       );
@@ -320,7 +325,7 @@ export default function User() {
         handleError(`Invalid genre: ${genreName}`);
         return;
       }
-
+      console.log(genre);
       const response = await api.post("/api/person/genre", {
         personId: person.personId,
         genreId: genre.genreId
@@ -332,7 +337,8 @@ export default function User() {
     }
   };
 
-  const addMovie = async (personId, newMovie, newRating) => {
+  const addMovie = async (evt, personId, newMovie, newRating) => {
+    evt.preventDefault();
     const person = userData.find((person) => person.personId === personId);
     const movieName = newMovie;
     let rating = parseInt(newRating.trim());

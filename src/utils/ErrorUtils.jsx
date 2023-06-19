@@ -7,8 +7,9 @@ export const handleError = (errorMessage, error) => {
   let errors = getErrorsFromLocalStorage();
   errors.push(newError);
   saveErrorsToLocalStorage(errors);
+  console.log(error.message);
 
-  throw new Error(error.message);
+  //  throw new Error(error.message);
 };
 
 export const clearErrors = () => {
